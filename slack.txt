@@ -1,0 +1,12 @@
+Slack Channel : #devops
+webhook URL : https://hooks.slack.com/services/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
+
+# systemctl restart prometheus 
+
+https://api.slack.com/apps/A093U9SNAFK/incoming-webhooks?success=1
+
+From Prometheus to slack test message
+=========================================
+curl -X POST -H 'Content-type: application/json' \
+--data '{"text":"Hello from Alertmanager test"}' \
+'https://hooks.slack.com/services/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'

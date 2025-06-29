@@ -1,0 +1,19 @@
+❓ 1. Do you need to install Node Exporter on every machine for Prometheus to monitor them?
+✅ Yes, if you want Prometheus to monitor system-level metrics (CPU, memory, disk, etc.) for that machine, you need to install Node Exporter on each machine (node) that you want to monitor.
+
+Node Exporter exposes machine metrics at an HTTP endpoint (default: :9100).
+
+Prometheus scrapes these endpoints to collect the data.
+
+❓ 2. Do you need to install Node Exporter on the Prometheus server itself?
+➡️ Only if you want to monitor the Prometheus server’s own system metrics.
+
+It's not required for Prometheus to function.
+
+But if you're treating the Prometheus server like any other node (monitoring its CPU, memory, etc.), then yes, install Node Exporter there too.
+
+✅ Summary:
+
+Machine Type			Install Node Exporter?				Why?
+Target nodes			✅ Yes								To expose system metrics to Prometheus
+Prometheus server		⚠️ Optional							Only if you want to monitor its system metrics too

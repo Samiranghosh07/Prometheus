@@ -1,0 +1,26 @@
+#Alert Notifier with Slack 
+#===========================
+
+#global:
+#  resolve_timeout: 5m
+
+#route:
+#  receiver: slack-notifications
+
+#receivers:
+#  - name: slack-notifications
+#    slack_configs:
+#      - channel: '#devops'
+#        send_resolved: true
+#        webhook_url: 'https://hooks.slack.com/services/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'
+
+#Alert Notifier with PagerDuty
+#===============================
+
+#global:
+#  pagerduty_url: 'https://event.pagerduty.com/v2/enque'
+
+#receivers:
+#  - name: linux_team_manager
+#    pagerduty_configs:
+#       - service_key: '<key>'

@@ -1,0 +1,299 @@
+link: https://www.fosstechnix.com/install-prometheus-and-grafana-on-ubuntu-24-04/
+https://github.com/prometheus
+
+========================================================================
+Training doc : https://sbcode.net/prometheus/alert-manager-configure/
+========================================================================
+
+======================================
+Install Prometheus Server on Ubuntu 24
+======================================
+
+sudo apt update -y
+
+sudo useradd --no-create-home --shell /bin/false prometheus
+
+sudo mkdir /etc/prometheus
+sudo mkdir /var/lib/prometheus
+
+sudo chown prometheus:prometheus /var/lib/prometheus
+
+cd /tmp/
+
+wget https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz
+
+tar -xvf prometheus-3.4.0.linux-amd64.tar.gz
+
+cd prometheus-3.4.0.linux-amd64.tar.gz
+
+sudo mv prometheus.yml /etc/prometheus
+sudo chown -R prometheus:prometheus /etc/prometheus
+
+sudo mv prometheus /usr/local/bin/
+sudo chown prometheus:prometheus /usr/local/bin/prometheus
+
+sudo mv promtool /usr/local/bin/
+sudo chown prometheus:prometheus /usr/local/bin/promtool
+
+sudo nano /etc/systemd/system/prometheus.service
+
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+    --config.file /etc/prometheus/prometheus.yml \
+    --storage.tsdb.path /var/lib/prometheus/ \
+    --web.console.templates=/etc/prometheus/consoles \
+    --web.console.libraries=/etc/prometheus/console_libraries
+
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl daemon-reload
+
+sudo systemctl start prometheus
+sudo systemctl enable prometheus
+sudo systemctl status prometheus
+
+sudo ufw allow 9090/tcp
+
+http://server-IP-or-Hostname:9090
+
+============================================
+Setup Prometheus AlertManager on Ubuntu 24:
+==============================================
+gmail notifier app id : wffs nkbi vvzv dogm
+
+apt install prometheus-alertmanager -y 
+
+cd /usr/share/prometheus/alertmanager/
+./generate-ui.sh
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']
+
+systemctl restart prometheus-alertmanager.service
+systemctl enable prometheus-alertmanager.service
+
+
+alternative setup
+=================
+wget https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz
+tar xvfz alertmanager-0.27.0.linux-amd64.tar.gz 
+cd alertmanager-0.27.0.linux-amd64
+./alertmanager --config.file=alertmanager.yml &
+
+cd /etc/prometheus
+nano prometheus.yml
+
+
+
+==================================================
+Setup Prometheus Process Exporter on Ubuntu 24
+===================================================
+
+wget https://github.com/ncabatoff/process-exporter/releases/download/v0.8.6/process-exporter-0.8.6.linux-amd64.tar.gz
+tar xvf process-exporter-0.8.6.linux-amd64.tar.gz
+cd process-exporter-0.8.6.linux-amd64
+sudo mv process-exporter /usr/local/bin/
+
+
+nano /etc/process-exporter/config.yml
+
+process_names:
+  - name: "{{.Comm}}"
+    cmdline:
+    - '.+'
+
+nano /etc/systemd/system/process-exporter.service
+
+[Unit]
+Description=Process Exporter for Prometheus
+After=network.target
+
+[Service]
+User=nobody
+ExecStart=/usr/local/bin/process-exporter --config.path /etc/process-exporter/config.yml
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable process-exporter
+sudo systemctl start process-exporter
+
+sudo systemctl status process-exporter
+
+###Configure Prometheus to Scrape Process Exporter**
+
+Edit your `/etc/prometheus/prometheus.yml
+
+scrape_configs:
+  - job_name: 'process-exporter'
+    static_configs:
+      - targets: ['localhost:9256']
+
+
+sudo systemctl restart prometheus
+
+
+
+
+===================================================
+Install Prometheus BlackBox Exporter on Ubuntu 24
+==================================================
+wget https://github.com/prometheus/blackbox_exporter/releases/download/v0.25.0/blackbox_exporter-0.25.0.linux-amd64.tar.gz 
+
+tar xvfz blackbox_exporter-0.25.0.linux-amd64.tar.gz 
+
+cd blackbox_exporter-0.25.0.linux-amd64
+
+./blackbox_exporter &
+
+==============================================
+Install Prometheus Node Exporter on Ubuntu 24
+==============================================
+
+cd /tmp
+
+wget https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.0.linux-amd64.tar.gz
+
+sudo tar xvfz node_exporter-*.*-amd64.tar.gz
+
+sudo mv node_exporter-*.*-amd64/node_exporter /usr/local/bin/
+
+sudo useradd -rs /bin/false node_exporter
+
+sudo nano /etc/systemd/system/node_exporter.service
+
+[Unit]
+
+Description=Node Exporter
+
+After=network.target
+
+ 
+
+[Service]
+
+User=node_exporter
+
+Group=node_exporter
+
+Type=simple
+
+ExecStart=/usr/local/bin/node_exporter
+
+ 
+
+[Install]
+
+WantedBy=multi-user.target
+
+
+sudo systemctl daemon-reload
+sudo systemctl start node_exporter
+sudo systemctl enable node_exporter
+sudo systemctl status node_exporter
+
+sudo nano /etc/prometheus/prometheus.yml
+
+- job_name: 'Node_Exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['<Server_IP_of_Node_Exporter_Machine>:9100']
+	  
+	  
+sudo systemctl restart prometheus
+
+============================
+Install Grafana on Ubuntu 24
+============================
+
+wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+
+sudo add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"
+
+sudo apt update
+
+sudo apt install grafana
+
+sudo systemctl start grafana-server
+
+sudo systemctl status grafana-server
+sudo systemctl enable grafana-server
+ 
+http://your_ip:3000
+
+Username – admin
+Password – admin
+
+import dashboard -> enter grafana dashboard id -> 14513
+
+
+Alternative Setup for Grafana
+=============================
+sudo apt-get install -y adduser libfontconfig1 musl
+wget https://dl.grafana.com/enterprise/release/grafana-enterprise_12.0.2_amd64.deb
+sudo dpkg -i grafana-enterprise_12.0.2_amd64.deb
+
+
+
+
+
+
+
+==============================================
+HELM Install on K8 Master Node for Monitoring
+==============================================
+
+Helm is a package manager for Kubernetes equivalent of yum or apt for Red hat and Ubuntu. Helm deploys charts, which we can think of as a packaged application. It is a collection of all your versioned, pre-configured application resources which can be deployed as one unit.
+
+
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+
+
+Install Kube Prometheus Stack
+==============================
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add stable https://charts.helm.sh/stable
+helm repo update
+helm repo list 
+
+kubectl create namespace monitoring
+
+helm install kind-prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --set prometheus.service.nodePort=30000 --set prometheus.service.type=NodePort --set grafana.service.nodePort=31000 --set grafana.service.type=NodePort --set alertmanager.service.nodePort=32000 --set alertmanager.service.type=NodePort --set prometheus-node-exporter.service.nodePort=32001 --set prometheus-node-exporter.service.type=NodePort
+
+kubectl get svc -n monitoring
+kubectl get namespace
+
+
+kubectl port-forward svc/kind-prometheus-kube-prome-prometheus -n monitoring 9090:9090 --address=0.0.0.0 &
+kubectl port-forward svc/kind-prometheus-grafana -n monitoring 31000:80 --address=0.0.0.0 &
+
+=====================
+Prometheus Queries
+=====================
+
+sum (rate (container_cpu_usage_seconds_total{namespace="default"}[1m])) / sum (machine_cpu_cores) * 100
+
+kubectl get svc -n monitoring 
+
+sum (container_memory_usage_bytes{namespace="default"}) by (pod)
+
+sum(rate(container_network_receive_bytes_total{namespace="default"}[5m])) by (pod)
+sum(rate(container_network_transmit_bytes_total{namespace="default"}[5m])) by (pod)
