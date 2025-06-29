@@ -1,5 +1,5 @@
 # Prometheus
-This repo represents configuration, manage alert monitoring and other exporters of Prometheus
+This repo represents configuration, manage alert monitoring and other exporters of Prometheus and Grafana setup for visualization
 
 #### VM-1 (Node Exporter)
 1. **Download Node Exporter**
