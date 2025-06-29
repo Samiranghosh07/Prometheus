@@ -17,6 +17,6 @@ But if you're treating the Prometheus server like any other node (monitoring its
 #====================================================================================================
 Machine Type			 Install Node Exporter?	                Why?
 #===================================================================================================
-Target nodes			        ✅ Yes		  To expose system metrics to Prometheus
+Target nodes			        ✅ Yes		      To expose system metrics to Prometheus
 Prometheus server		      ⚠️ Optional			Only if you want to monitor its system metrics tool
 #==================================================================================================
